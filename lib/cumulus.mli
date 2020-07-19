@@ -82,6 +82,11 @@ val l3 :
           ('d, 'dd) update) ->
   ('a, 'da) t -> ('b, 'db) t -> ('c, 'dc) t -> ('d, 'dd) t
 
+val lN :
+  init: ('a list -> 'b) ->
+  patch: (('a * 'da option) list -> ('b, 'db) update) ->
+  ('a, 'da) t list -> ('b, 'db) t
+
 (** {1 Higher Order} *)
 
 val bind : ('a, 'da) t -> (('a, 'da) change -> ('b, 'db) t) -> ('b, 'db) t

@@ -16,6 +16,11 @@
 
 open React
 
+let (%) f g x = f (g x)
+
+let lN_signal ?eq f sxs =
+  S.map ?eq (f % List.rev) (S.merge ~eq:(==) (fun acc x -> x :: acc) [] sxs)
+
 type ('a, 'da) change = Init of 'a | Patch of 'a * 'da | Keep of 'a
 type ('a, 'da) update = 'a -> ('a, 'da) change
 
@@ -179,6 +184,33 @@ let l3 ~init ~patch s1 s2 s3 =
      | _, Keep _, _, _ | _, _, Keep _, _ | _, _, _, Keep _ -> assert false)
   in
   S.l3 ~eq:(==) f s1 s2 s3
+
+let lN ~init ~patch sxs =
+  let state = ref None in
+  let f cxs =
+    let reset () =
+      let xs = List.map value_of_change cxs in
+      let y = init xs in
+      let cy = Init y in
+      (state := Some (cxs, cy); cy)
+    in
+    (match !state with
+     | None ->
+        reset ()
+     | Some _ when List.exists (function Init _ -> true | _ -> false) cxs ->
+        reset ()
+     | Some (cxs', (Init y' | Patch (y', _) as cy'))
+            when List.for_all (function Patch _ -> true | _ -> false) cxs ->
+        let aux cx' = function
+         | Patch (x, dx) as cx -> (x, (if cx == cx' then None else Some dx))
+         | _ -> assert false
+        in
+        (match patch (List.map2 aux cxs' cxs) y' with
+         | Keep _ -> cy'
+         | cy -> (state := Some (cxs, cy); cy))
+     | _ -> assert false)
+  in
+  lN_signal ~eq:(==) f sxs
 
 let bind s f =
   let epoch_in = ref 0 in
