@@ -102,6 +102,20 @@ let test_lN r =
         C.l3 ~init:(fun x1 x2 x3 -> init [x1; x2; x3])
              ~patch:(fun xdx1 xdx2 xdx3 -> patch [xdx1; xdx2; xdx3])
              x1 x2 x3
+     | true, [x1; x2; x3; x4] ->
+        C.l4 ~init:(fun x1 x2 x3 x4 -> init [x1; x2; x3; x4])
+             ~patch:(fun xdx1 xdx2 xdx3 xdx4 -> patch [xdx1; xdx2; xdx3; xdx4])
+             x1 x2 x3 x4
+     | true, [x1; x2; x3; x4; x5] ->
+        C.l5 ~init:(fun x1 x2 x3 x4 x5 -> init [x1; x2; x3; x4; x5])
+             ~patch:(fun xdx1 xdx2 xdx3 xdx4 xdx5 ->
+                      patch [xdx1; xdx2; xdx3; xdx4; xdx5])
+             x1 x2 x3 x4 x5
+     | true, [x1; x2; x3; x4; x5; x6] ->
+        C.l6 ~init:(fun x1 x2 x3 x4 x5 x6 -> init [x1; x2; x3; x4; x5; x6])
+             ~patch:(fun xdx1 xdx2 xdx3 xdx4 xdx5 xdx6 ->
+                      patch [xdx1; xdx2; xdx3; xdx4; xdx5; xdx6])
+             x1 x2 x3 x4 x5 x6
      | _ ->
         C.lN ~init ~patch xs)
   in
@@ -135,6 +149,6 @@ let test_lN r =
   loop 50 Label_map.empty
 
 let () =
-  for r = 1 to 150 do
+  for r = 1 to 400 do
     test_lN (Random.int r)
   done

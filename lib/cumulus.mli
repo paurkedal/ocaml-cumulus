@@ -82,6 +82,27 @@ val l3 :
           ('d, 'dd) update) ->
   ('a, 'da) t -> ('b, 'db) t -> ('c, 'dc) t -> ('d, 'dd) t
 
+val l4 :
+  init: ('a -> 'b -> 'c -> 'd -> 'e) ->
+  patch: ('a * 'da option -> 'b * 'db option -> 'c * 'dc option ->
+          'd * 'dd option -> ('e, 'de) update) ->
+  ('a, 'da) t -> ('b, 'db) t -> ('c, 'dc) t -> ('d, 'dd) t -> ('e, 'de) t
+
+val l5 :
+  init: ('a -> 'b -> 'c -> 'd -> 'e -> 'f) ->
+  patch: ('a * 'da option -> 'b * 'db option -> 'c * 'dc option ->
+          'd * 'dd option -> 'e * 'de option -> ('f, 'df) update) ->
+  ('a, 'da) t -> ('b, 'db) t -> ('c, 'dc) t -> ('d, 'dd) t -> ('e, 'de) t ->
+  ('f, 'df) t
+
+val l6 :
+  init: ('a -> 'b -> 'c -> 'd -> 'e -> 'f -> 'g) ->
+  patch: ('a * 'da option -> 'b * 'db option -> 'c * 'dc option ->
+          'd * 'dd option -> 'e * 'de option -> 'f * 'df option ->
+          ('g, 'dg) update) ->
+  ('a, 'da) t -> ('b, 'db) t -> ('c, 'dc) t -> ('d, 'dd) t -> ('e, 'de) t ->
+  ('f, 'df) t -> ('g, 'dg) t
+
 val lN :
   init: ('a list -> 'b) ->
   patch: (('a * 'da option) list -> ('b, 'db) update) ->

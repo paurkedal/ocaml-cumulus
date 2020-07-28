@@ -185,6 +185,155 @@ let l3 ~init ~patch sx1 sx2 sx3 =
   in
   S.l3 ~eq:(==) f sx1 sx2 sx3
 
+let l4 ~init ~patch sx1 sx2 sx3 sx4 =
+  let state = ref None in
+  let f cx1 cx2 cx3 cx4 =
+    (match !state, cx1, cx2, cx3, cx4 with
+     | None,
+          (Init x1 | Patch (x1, _)),
+          (Init x2 | Patch (x2, _)),
+          (Init x3 | Patch (x3, _)),
+          (Init x4 | Patch (x4, _))
+     | Some _, Init x1,
+          (Init x2 | Patch (x2, _)),
+          (Init x3 | Patch (x3, _)),
+          (Init x4 | Patch (x4, _))
+     | Some _, Patch (x1, _), Init x2,
+          (Init x3 | Patch (x3, _)),
+          (Init x4 | Patch (x4, _))
+     | Some _, Patch (x1, _), Patch (x2, _), Init x3,
+          (Init x4 | Patch (x4, _))
+     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Init x4 ->
+        let y = init x1 x2 x3 x4 in
+        let cy = Init y in
+        (state := Some (cx1, cx2, cx3, cx4, cy); cy)
+     | Some (cx1', cx2', cx3', cx4', (Init y' | Patch (y', _) as cy')),
+          Patch (x1, dx1), Patch (x2, dx2), Patch (x3, dx3), Patch (x4, dx4) ->
+        let dx1 = if cx1 == cx1' then None else Some dx1 in
+        let dx2 = if cx2 == cx2' then None else Some dx2 in
+        let dx3 = if cx3 == cx3' then None else Some dx3 in
+        let dx4 = if cx4 == cx4' then None else Some dx4 in
+        (match patch (x1, dx1) (x2, dx2) (x3, dx3) (x4, dx4) y' with
+         | Keep _ -> cy'
+         | cy -> (state := Some (cx1, cx2, cx3, cx4, cy); cy))
+     | Some (_, _, _, _, Keep _), _, _, _, _
+     | _, Keep _, _, _, _
+     | _, _, Keep _, _, _
+     | _, _, _, Keep _, _
+     | _, _, _, _, Keep _ -> assert false)
+  in
+  S.l4 ~eq:(==) f sx1 sx2 sx3 sx4
+
+let l5 ~init ~patch sx1 sx2 sx3 sx4 sx5 =
+  let state = ref None in
+  let f cx1 cx2 cx3 cx4 cx5 =
+    (match !state, cx1, cx2, cx3, cx4, cx5 with
+     | None,
+          (Init x1 | Patch (x1, _)),
+          (Init x2 | Patch (x2, _)),
+          (Init x3 | Patch (x3, _)),
+          (Init x4 | Patch (x4, _)),
+          (Init x5 | Patch (x5, _))
+     | Some _, Init x1,
+          (Init x2 | Patch (x2, _)),
+          (Init x3 | Patch (x3, _)),
+          (Init x4 | Patch (x4, _)),
+          (Init x5 | Patch (x5, _))
+     | Some _, Patch (x1, _), Init x2,
+          (Init x3 | Patch (x3, _)),
+          (Init x4 | Patch (x4, _)),
+          (Init x5 | Patch (x5, _))
+     | Some _, Patch (x1, _), Patch (x2, _), Init x3,
+          (Init x4 | Patch (x4, _)),
+          (Init x5 | Patch (x5, _))
+     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Init x4,
+          (Init x5 | Patch (x5, _))
+     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Patch (x4, _),
+          Init x5 ->
+        let y = init x1 x2 x3 x4 x5 in
+        let cy = Init y in
+        (state := Some (cx1, cx2, cx3, cx4, cx5, cy); cy)
+     | Some (cx1', cx2', cx3', cx4', cx5', (Init y' | Patch (y', _) as cy')),
+          Patch (x1, dx1), Patch (x2, dx2), Patch (x3, dx3),
+          Patch (x4, dx4), Patch (x5, dx5) ->
+        let dx1 = if cx1 == cx1' then None else Some dx1 in
+        let dx2 = if cx2 == cx2' then None else Some dx2 in
+        let dx3 = if cx3 == cx3' then None else Some dx3 in
+        let dx4 = if cx4 == cx4' then None else Some dx4 in
+        let dx5 = if cx5 == cx5' then None else Some dx5 in
+        (match patch (x1, dx1) (x2, dx2) (x3, dx3) (x4, dx4) (x5, dx5) y' with
+         | Keep _ -> cy'
+         | cy -> (state := Some (cx1, cx2, cx3, cx4, cx5, cy); cy))
+     | Some (_, _, _, _, _, Keep _), _, _, _, _, _
+     | _, Keep _, _, _, _, _
+     | _, _, Keep _, _, _, _
+     | _, _, _, Keep _, _, _
+     | _, _, _, _, Keep _, _
+     | _, _, _, _, _, Keep _ -> assert false)
+  in
+  S.l5 ~eq:(==) f sx1 sx2 sx3 sx4 sx5
+
+let l6 ~init ~patch sx1 sx2 sx3 sx4 sx5 sx6 =
+  let state = ref None in
+  let f cx1 cx2 cx3 cx4 cx5 cx6 =
+    (match !state, cx1, cx2, cx3, cx4, cx5, cx6 with
+     | None,
+          (Init x1 | Patch (x1, _)),
+          (Init x2 | Patch (x2, _)),
+          (Init x3 | Patch (x3, _)),
+          (Init x4 | Patch (x4, _)),
+          (Init x5 | Patch (x5, _)),
+          (Init x6 | Patch (x6, _))
+     | Some _, Init x1,
+          (Init x2 | Patch (x2, _)),
+          (Init x3 | Patch (x3, _)),
+          (Init x4 | Patch (x4, _)),
+          (Init x5 | Patch (x5, _)),
+          (Init x6 | Patch (x6, _))
+     | Some _, Patch (x1, _), Init x2,
+          (Init x3 | Patch (x3, _)),
+          (Init x4 | Patch (x4, _)),
+          (Init x5 | Patch (x5, _)),
+          (Init x6 | Patch (x6, _))
+     | Some _, Patch (x1, _), Patch (x2, _), Init x3,
+          (Init x4 | Patch (x4, _)),
+          (Init x5 | Patch (x5, _)),
+          (Init x6 | Patch (x6, _))
+     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Init x4,
+          (Init x5 | Patch (x5, _)),
+          (Init x6 | Patch (x6, _))
+     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Patch (x4, _),
+               Init x5,
+          (Init x6 | Patch (x6, _))
+     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Patch (x4, _),
+               Patch (x5, _), Init x6 ->
+        let y = init x1 x2 x3 x4 x5 x6 in
+        let cy = Init y in
+        (state := Some (cx1, cx2, cx3, cx4, cx5, cx6, cy); cy)
+     | Some (cx1', cx2', cx3', cx4', cx5', cx6',
+             (Init y' | Patch (y', _) as cy')),
+          Patch (x1, dx1), Patch (x2, dx2), Patch (x3, dx3),
+          Patch (x4, dx4), Patch (x5, dx5), Patch (x6, dx6) ->
+        let dx1 = if cx1 == cx1' then None else Some dx1 in
+        let dx2 = if cx2 == cx2' then None else Some dx2 in
+        let dx3 = if cx3 == cx3' then None else Some dx3 in
+        let dx4 = if cx4 == cx4' then None else Some dx4 in
+        let dx5 = if cx5 == cx5' then None else Some dx5 in
+        let dx6 = if cx6 == cx6' then None else Some dx6 in
+        (match patch (x1, dx1) (x2, dx2) (x3, dx3)
+                     (x4, dx4) (x5, dx5) (x6, dx6) y' with
+         | Keep _ -> cy'
+         | cy -> (state := Some (cx1, cx2, cx3, cx4, cx5, cx6, cy); cy))
+     | Some (_, _, _, _, _, _, Keep _), _, _, _, _, _, _
+     | _, Keep _, _, _, _, _, _
+     | _, _, Keep _, _, _, _, _
+     | _, _, _, Keep _, _, _, _
+     | _, _, _, _, Keep _, _, _
+     | _, _, _, _, _, Keep _, _
+     | _, _, _, _, _, _, Keep _ -> assert false)
+  in
+  S.l6 ~eq:(==) f sx1 sx2 sx3 sx4 sx5 sx6
+
 let lN ~init ~patch sxs =
   let state = ref None in
   let f cxs =
