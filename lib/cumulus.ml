@@ -67,7 +67,7 @@ let deduplicator () =
      | Some seen when seen == c -> Keep (value_of_change c)
      | _ -> seen := Some c; c)
 
-let lift1 ~init ~patch s1 =
+let lift1 ~init ~patch sx1 =
   let state = ref None in
   let f cx =
     (match !state with
@@ -80,9 +80,9 @@ let lift1 ~init ~patch s1 =
          | Keep _ -> cy'
          | cy -> (state := Some cy; cy)))
   in
-  S.l1 ~eq:(==) f s1
+  S.l1 ~eq:(==) f sx1
 
-let lift2 ~init ~patch s1 s2 =
+let lift2 ~init ~patch sx1 sx2 =
   let state = ref None in
   let dd1 = deduplicator () in
   let dd2 = deduplicator () in
@@ -97,9 +97,9 @@ let lift2 ~init ~patch s1 s2 =
          | Keep _ -> cy'
          | cy -> (state := Some cy; cy)))
   in
-  S.l2 ~eq:(==) f s1 s2
+  S.l2 ~eq:(==) f sx1 sx2
 
-let lift3 ~init ~patch s1 s2 s3 =
+let lift3 ~init ~patch sx1 sx2 sx3 =
   let state = ref None in
   let dd1 = deduplicator () in
   let dd2 = deduplicator () in
@@ -116,9 +116,9 @@ let lift3 ~init ~patch s1 s2 s3 =
          | Keep _ -> cy'
          | cy -> (state := Some cy; cy)))
   in
-  S.l3 ~eq:(==) f s1 s2 s3
+  S.l3 ~eq:(==) f sx1 sx2 sx3
 
-let l1 ~init ~patch s1 =
+let l1 ~init ~patch sx1 =
   let state = ref None in
   let f cx1 =
     (match !state, cx1 with
@@ -134,9 +134,9 @@ let l1 ~init ~patch s1 =
      | Some (Keep _), _
      | _, Keep _ -> assert false)
   in
-  S.l1 ~eq:(==) f s1
+  S.l1 ~eq:(==) f sx1
 
-let l2 ~init ~patch s1 s2 =
+let l2 ~init ~patch sx1 sx2 =
   let state = ref None in
   let f cx1 cx2 =
     (match !state, cx1, cx2 with
@@ -157,9 +157,9 @@ let l2 ~init ~patch s1 s2 =
      | Some (_, _, Keep _), _, _
      | _, Keep _, _ | _, _, Keep _ -> assert false)
   in
-  S.l2 ~eq:(==) f s1 s2
+  S.l2 ~eq:(==) f sx1 sx2
 
-let l3 ~init ~patch s1 s2 s3 =
+let l3 ~init ~patch sx1 sx2 sx3 =
   let state = ref None in
   let f cx1 cx2 cx3 =
     (match !state, cx1, cx2, cx3 with
@@ -183,7 +183,7 @@ let l3 ~init ~patch s1 s2 s3 =
      | Some (_, _, _, Keep _), _, _, _
      | _, Keep _, _, _ | _, _, Keep _, _ | _, _, _, Keep _ -> assert false)
   in
-  S.l3 ~eq:(==) f s1 s2 s3
+  S.l3 ~eq:(==) f sx1 sx2 sx3
 
 let lN ~init ~patch sxs =
   let state = ref None in
