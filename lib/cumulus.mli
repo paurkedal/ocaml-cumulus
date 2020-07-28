@@ -28,6 +28,10 @@ val const : 'a -> ('a, 'da) t
 
 val create : 'a -> ('a, 'da) t * (?step: Step.t -> ('a, 'da) change -> unit)
 
+val of_event : 'a event -> (unit, 'a) t
+
+val of_signal : 'a signal -> ('a, unit) t
+
 val integrate : ('da -> 'a -> 'a) -> 'da event -> 'a -> ('a, 'da) t
 
 val fold : ('b -> ('a, 'da) update) -> 'b event -> 'a -> ('a, 'da) t

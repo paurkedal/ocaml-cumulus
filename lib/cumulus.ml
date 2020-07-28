@@ -32,6 +32,14 @@ let const x = S.const (Init x)
 
 let create x = S.create (Init x)
 
+let of_event ex = S.hold ~eq:(==) (Init ()) (E.map (fun dx -> (Patch ((), dx))) ex)
+
+let of_signal sx =
+  let is_init = ref true in
+  S.map ~eq:(==)
+    (fun x -> if !is_init then (is_init := false; Init x) else Patch (x, ()))
+    sx
+
 let value s = value_of_change (S.value s)
 
 let signal s = S.map ~eq:(==) value_of_change s
