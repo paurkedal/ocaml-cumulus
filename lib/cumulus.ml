@@ -144,228 +144,180 @@ let l1 ~init ~patch sx1 =
   in
   S.l1 ~eq:(==) f sx1
 
+let dedupe cx' cx = if cx == cx' then Keep (value_of_change cx) else cx
+
+let patch_arg = function
+ | Init _ -> assert false
+ | Patch (x, dx) -> (x, Some dx)
+ | Keep x -> (x, None)
+
 let l2 ~init ~patch sx1 sx2 =
   let state = ref None in
   let f cx1 cx2 =
-    (match !state, cx1, cx2 with
-     | None, (Init x1 | Patch (x1, _)),
-             (Init x2 | Patch (x2, _))
-     | Some _, Init x1, (Init x2 | Patch (x2, _))
-     | Some _, Patch (x1, _), Init x2 ->
-        let y = init x1 x2 in
-        let cy = Init y in
-        (state := Some (cx1, cx2, cy); cy)
-     | Some (cx1', cx2', (Init y' | Patch (y', _) as cy')),
-          Patch (x1, dx1), Patch (x2, dx2) ->
-        let dx1 = if cx1 == cx1' then None else Some dx1 in
-        let dx2 = if cx2 == cx2' then None else Some dx2 in
-        (match patch (x1, dx1) (x2, dx2) y' with
-         | Keep _ -> cy'
-         | cy -> (state := Some (cx1, cx2, cy); cy))
-     | Some (_, _, Keep _), _, _
-     | _, Keep _, _ | _, _, Keep _ -> assert false)
+    let do_init () =
+      let y = init (value_of_change cx1) (value_of_change cx2) in
+      let cy = Init y in
+      (state := Some (cx1, cx2, cy); cy)
+    in
+    let do_patch xdx1 xdx2 cy' =
+      (match patch xdx1 xdx2 (value_of_change cy') with
+       | Keep _ -> cy'
+       | cy -> (state := Some (cx1, cx2, cy); cy))
+    in
+    (match !state with
+     | None -> do_init ()
+     | Some (cx1', cx2', cy') ->
+        (match dedupe cx1' cx1, dedupe cx2' cx2 with
+         | Init _, _ | _, Init _ -> do_init ()
+         | (Patch _ | Keep _ as cx1d), (Patch _ | Keep _ as cx2d) ->
+            do_patch (patch_arg cx1d) (patch_arg cx2d) cy'))
   in
   S.l2 ~eq:(==) f sx1 sx2
 
 let l3 ~init ~patch sx1 sx2 sx3 =
   let state = ref None in
   let f cx1 cx2 cx3 =
-    (match !state, cx1, cx2, cx3 with
-     | None, (Init x1 | Patch (x1, _)),
-             (Init x2 | Patch (x2, _)),
-             (Init x3 | Patch (x3, _))
-     | Some _, Init x1, (Init x2 | Patch (x2, _)), (Init x3 | Patch (x3, _))
-     | Some _, Patch (x1, _), Init x2, (Init x3 | Patch (x3, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Init x3 ->
-        let y = init x1 x2 x3 in
-        let cy = Init y in
-        (state := Some (cx1, cx2, cx3, cy); cy)
-     | Some (cx1', cx2', cx3', (Init y' | Patch (y', _) as cy')),
-          Patch (x1, dx1), Patch (x2, dx2), Patch (x3, dx3) ->
-        let dx1 = if cx1 == cx1' then None else Some dx1 in
-        let dx2 = if cx2 == cx2' then None else Some dx2 in
-        let dx3 = if cx3 == cx3' then None else Some dx3 in
-        (match patch (x1, dx1) (x2, dx2) (x3, dx3) y' with
-         | Keep _ -> cy'
-         | cy -> (state := Some (cx1, cx2, cx3, cy); cy))
-     | Some (_, _, _, Keep _), _, _, _
-     | _, Keep _, _, _ | _, _, Keep _, _ | _, _, _, Keep _ -> assert false)
+    let do_init () =
+      let y =
+        init (value_of_change cx1) (value_of_change cx2) (value_of_change cx3)
+      in
+      let cy = Init y in
+      (state := Some (cx1, cx2, cx3, cy); cy)
+    in
+    let do_patch xdx1 xdx2 xdx3 cy' =
+      (match patch xdx1 xdx2 xdx3 (value_of_change cy') with
+       | Keep _ -> cy'
+       | cy -> (state := Some (cx1, cx2, cx3, cy); cy))
+    in
+    (match !state with
+     | None -> do_init ()
+     | Some (cx1', cx2', cx3', cy') ->
+        (match dedupe cx1' cx1, dedupe cx2' cx2, dedupe cx3' cx3 with
+         | Init _, _, _ | _, Init _, _ | _, _, Init _ -> do_init ()
+         | (Patch _ | Keep _ as cx1d), (Patch _ | Keep _ as cx2d),
+           (Patch _ | Keep _ as cx3d) ->
+            do_patch (patch_arg cx1d) (patch_arg cx2d) (patch_arg cx3d) cy'))
   in
   S.l3 ~eq:(==) f sx1 sx2 sx3
 
 let l4 ~init ~patch sx1 sx2 sx3 sx4 =
   let state = ref None in
   let f cx1 cx2 cx3 cx4 =
-    (match !state, cx1, cx2, cx3, cx4 with
-     | None,
-          (Init x1 | Patch (x1, _)),
-          (Init x2 | Patch (x2, _)),
-          (Init x3 | Patch (x3, _)),
-          (Init x4 | Patch (x4, _))
-     | Some _, Init x1,
-          (Init x2 | Patch (x2, _)),
-          (Init x3 | Patch (x3, _)),
-          (Init x4 | Patch (x4, _))
-     | Some _, Patch (x1, _), Init x2,
-          (Init x3 | Patch (x3, _)),
-          (Init x4 | Patch (x4, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Init x3,
-          (Init x4 | Patch (x4, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Init x4 ->
-        let y = init x1 x2 x3 x4 in
-        let cy = Init y in
-        (state := Some (cx1, cx2, cx3, cx4, cy); cy)
-     | Some (cx1', cx2', cx3', cx4', (Init y' | Patch (y', _) as cy')),
-          Patch (x1, dx1), Patch (x2, dx2), Patch (x3, dx3), Patch (x4, dx4) ->
-        let dx1 = if cx1 == cx1' then None else Some dx1 in
-        let dx2 = if cx2 == cx2' then None else Some dx2 in
-        let dx3 = if cx3 == cx3' then None else Some dx3 in
-        let dx4 = if cx4 == cx4' then None else Some dx4 in
-        (match patch (x1, dx1) (x2, dx2) (x3, dx3) (x4, dx4) y' with
-         | Keep _ -> cy'
-         | cy -> (state := Some (cx1, cx2, cx3, cx4, cy); cy))
-     | Some (_, _, _, _, Keep _), _, _, _, _
-     | _, Keep _, _, _, _
-     | _, _, Keep _, _, _
-     | _, _, _, Keep _, _
-     | _, _, _, _, Keep _ -> assert false)
+    let do_init () =
+      let y =
+        init (value_of_change cx1) (value_of_change cx2) (value_of_change cx3)
+             (value_of_change cx4)
+      in
+      let cy = Init y in
+      (state := Some (cx1, cx2, cx3, cx4, cy); cy)
+    in
+    let do_patch xdx1 xdx2 xdx3 xdx4 cy' =
+      (match patch xdx1 xdx2 xdx3 xdx4 (value_of_change cy') with
+       | Keep _ -> cy'
+       | cy -> (state := Some (cx1, cx2, cx3, cx4, cy); cy))
+    in
+    (match !state with
+     | None -> do_init ()
+     | Some (cx1', cx2', cx3', cx4', cy') ->
+        (match dedupe cx1' cx1, dedupe cx2' cx2, dedupe cx3' cx3,
+               dedupe cx4' cx4 with
+         | Init _, _, _, _ | _, Init _, _, _ | _, _, Init _, _
+         | _, _, _, Init _ ->
+            do_init ()
+         | (Patch _ | Keep _ as cx1d), (Patch _ | Keep _ as cx2d),
+           (Patch _ | Keep _ as cx3d), (Patch _ | Keep _ as cx4d) ->
+            do_patch (patch_arg cx1d) (patch_arg cx2d)
+                     (patch_arg cx3d) (patch_arg cx4d) cy'))
   in
   S.l4 ~eq:(==) f sx1 sx2 sx3 sx4
 
 let l5 ~init ~patch sx1 sx2 sx3 sx4 sx5 =
   let state = ref None in
   let f cx1 cx2 cx3 cx4 cx5 =
-    (match !state, cx1, cx2, cx3, cx4, cx5 with
-     | None,
-          (Init x1 | Patch (x1, _)),
-          (Init x2 | Patch (x2, _)),
-          (Init x3 | Patch (x3, _)),
-          (Init x4 | Patch (x4, _)),
-          (Init x5 | Patch (x5, _))
-     | Some _, Init x1,
-          (Init x2 | Patch (x2, _)),
-          (Init x3 | Patch (x3, _)),
-          (Init x4 | Patch (x4, _)),
-          (Init x5 | Patch (x5, _))
-     | Some _, Patch (x1, _), Init x2,
-          (Init x3 | Patch (x3, _)),
-          (Init x4 | Patch (x4, _)),
-          (Init x5 | Patch (x5, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Init x3,
-          (Init x4 | Patch (x4, _)),
-          (Init x5 | Patch (x5, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Init x4,
-          (Init x5 | Patch (x5, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Patch (x4, _),
-          Init x5 ->
-        let y = init x1 x2 x3 x4 x5 in
-        let cy = Init y in
-        (state := Some (cx1, cx2, cx3, cx4, cx5, cy); cy)
-     | Some (cx1', cx2', cx3', cx4', cx5', (Init y' | Patch (y', _) as cy')),
-          Patch (x1, dx1), Patch (x2, dx2), Patch (x3, dx3),
-          Patch (x4, dx4), Patch (x5, dx5) ->
-        let dx1 = if cx1 == cx1' then None else Some dx1 in
-        let dx2 = if cx2 == cx2' then None else Some dx2 in
-        let dx3 = if cx3 == cx3' then None else Some dx3 in
-        let dx4 = if cx4 == cx4' then None else Some dx4 in
-        let dx5 = if cx5 == cx5' then None else Some dx5 in
-        (match patch (x1, dx1) (x2, dx2) (x3, dx3) (x4, dx4) (x5, dx5) y' with
-         | Keep _ -> cy'
-         | cy -> (state := Some (cx1, cx2, cx3, cx4, cx5, cy); cy))
-     | Some (_, _, _, _, _, Keep _), _, _, _, _, _
-     | _, Keep _, _, _, _, _
-     | _, _, Keep _, _, _, _
-     | _, _, _, Keep _, _, _
-     | _, _, _, _, Keep _, _
-     | _, _, _, _, _, Keep _ -> assert false)
+    let do_init () =
+      let y =
+        init (value_of_change cx1) (value_of_change cx2) (value_of_change cx3)
+             (value_of_change cx4) (value_of_change cx5)
+      in
+      let cy = Init y in
+      (state := Some (cx1, cx2, cx3, cx4, cx5, cy); cy)
+    in
+    let do_patch xdx1 xdx2 xdx3 xdx4 xdx5 cy' =
+      (match patch xdx1 xdx2 xdx3 xdx4 xdx5 (value_of_change cy') with
+       | Keep _ -> cy'
+       | cy -> (state := Some (cx1, cx2, cx3, cx4, cx5, cy); cy))
+    in
+    (match !state with
+     | None -> do_init ()
+     | Some (cx1', cx2', cx3', cx4', cx5', cy') ->
+        (match dedupe cx1' cx1, dedupe cx2' cx2, dedupe cx3' cx3,
+               dedupe cx4' cx4, dedupe cx5' cx5 with
+         | Init _, _, _, _, _ | _, Init _, _, _, _ | _, _, Init _, _, _
+         | _, _, _, Init _, _ | _, _, _, _, Init _ ->
+            do_init ()
+         | (Patch _ | Keep _ as cx1d), (Patch _ | Keep _ as cx2d),
+           (Patch _ | Keep _ as cx3d), (Patch _ | Keep _ as cx4d),
+           (Patch _ | Keep _ as cx5d) ->
+            do_patch (patch_arg cx1d) (patch_arg cx2d) (patch_arg cx3d)
+                     (patch_arg cx4d) (patch_arg cx5d) cy'))
   in
   S.l5 ~eq:(==) f sx1 sx2 sx3 sx4 sx5
 
 let l6 ~init ~patch sx1 sx2 sx3 sx4 sx5 sx6 =
   let state = ref None in
   let f cx1 cx2 cx3 cx4 cx5 cx6 =
-    (match !state, cx1, cx2, cx3, cx4, cx5, cx6 with
-     | None,
-          (Init x1 | Patch (x1, _)),
-          (Init x2 | Patch (x2, _)),
-          (Init x3 | Patch (x3, _)),
-          (Init x4 | Patch (x4, _)),
-          (Init x5 | Patch (x5, _)),
-          (Init x6 | Patch (x6, _))
-     | Some _, Init x1,
-          (Init x2 | Patch (x2, _)),
-          (Init x3 | Patch (x3, _)),
-          (Init x4 | Patch (x4, _)),
-          (Init x5 | Patch (x5, _)),
-          (Init x6 | Patch (x6, _))
-     | Some _, Patch (x1, _), Init x2,
-          (Init x3 | Patch (x3, _)),
-          (Init x4 | Patch (x4, _)),
-          (Init x5 | Patch (x5, _)),
-          (Init x6 | Patch (x6, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Init x3,
-          (Init x4 | Patch (x4, _)),
-          (Init x5 | Patch (x5, _)),
-          (Init x6 | Patch (x6, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Init x4,
-          (Init x5 | Patch (x5, _)),
-          (Init x6 | Patch (x6, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Patch (x4, _),
-               Init x5,
-          (Init x6 | Patch (x6, _))
-     | Some _, Patch (x1, _), Patch (x2, _), Patch (x3, _), Patch (x4, _),
-               Patch (x5, _), Init x6 ->
-        let y = init x1 x2 x3 x4 x5 x6 in
-        let cy = Init y in
-        (state := Some (cx1, cx2, cx3, cx4, cx5, cx6, cy); cy)
-     | Some (cx1', cx2', cx3', cx4', cx5', cx6',
-             (Init y' | Patch (y', _) as cy')),
-          Patch (x1, dx1), Patch (x2, dx2), Patch (x3, dx3),
-          Patch (x4, dx4), Patch (x5, dx5), Patch (x6, dx6) ->
-        let dx1 = if cx1 == cx1' then None else Some dx1 in
-        let dx2 = if cx2 == cx2' then None else Some dx2 in
-        let dx3 = if cx3 == cx3' then None else Some dx3 in
-        let dx4 = if cx4 == cx4' then None else Some dx4 in
-        let dx5 = if cx5 == cx5' then None else Some dx5 in
-        let dx6 = if cx6 == cx6' then None else Some dx6 in
-        (match patch (x1, dx1) (x2, dx2) (x3, dx3)
-                     (x4, dx4) (x5, dx5) (x6, dx6) y' with
-         | Keep _ -> cy'
-         | cy -> (state := Some (cx1, cx2, cx3, cx4, cx5, cx6, cy); cy))
-     | Some (_, _, _, _, _, _, Keep _), _, _, _, _, _, _
-     | _, Keep _, _, _, _, _, _
-     | _, _, Keep _, _, _, _, _
-     | _, _, _, Keep _, _, _, _
-     | _, _, _, _, Keep _, _, _
-     | _, _, _, _, _, Keep _, _
-     | _, _, _, _, _, _, Keep _ -> assert false)
+    let do_init () =
+      let y =
+        init (value_of_change cx1) (value_of_change cx2) (value_of_change cx3)
+             (value_of_change cx4) (value_of_change cx5) (value_of_change cx6)
+      in
+      let cy = Init y in
+      (state := Some (cx1, cx2, cx3, cx4, cx5, cx6, cy); cy)
+    in
+    let do_patch xdx1 xdx2 xdx3 xdx4 xdx5 xdx6 cy' =
+      (match patch xdx1 xdx2 xdx3 xdx4 xdx5 xdx6 (value_of_change cy') with
+       | Keep _ -> cy'
+       | cy -> (state := Some (cx1, cx2, cx3, cx4, cx5, cx6, cy); cy))
+    in
+    (match !state with
+     | None -> do_init ()
+     | Some (cx1', cx2', cx3', cx4', cx5', cx6', cy') ->
+        (match dedupe cx1' cx1, dedupe cx2' cx2, dedupe cx3' cx3,
+               dedupe cx4' cx4, dedupe cx5' cx5, dedupe cx6' cx6 with
+         | Init _, _, _, _, _, _ | _, Init _, _, _, _, _
+         | _, _, Init _, _, _, _ | _, _, _, Init _, _, _
+         | _, _, _, _, Init _, _ | _, _, _, _, _, Init _ ->
+            do_init ()
+         | (Patch _ | Keep _ as cx1d), (Patch _ | Keep _ as cx2d),
+           (Patch _ | Keep _ as cx3d), (Patch _ | Keep _ as cx4d),
+           (Patch _ | Keep _ as cx5d), (Patch _ | Keep _ as cx6d) ->
+            do_patch (patch_arg cx1d) (patch_arg cx2d) (patch_arg cx3d)
+                     (patch_arg cx4d) (patch_arg cx5d) (patch_arg cx6d) cy'))
   in
   S.l6 ~eq:(==) f sx1 sx2 sx3 sx4 sx5 sx6
 
 let lN ~init ~patch sxs =
   let state = ref None in
   let f cxs =
-    let reset () =
+    let do_init () =
       let xs = List.map value_of_change cxs in
       let y = init xs in
       let cy = Init y in
       (state := Some (cxs, cy); cy)
     in
+    let do_patch xdxs cy' =
+      (match patch xdxs (value_of_change cy') with
+       | Keep _ -> cy'
+       | cy -> (state := Some (cxs, cy); cy))
+    in
     (match !state with
-     | None ->
-        reset ()
-     | Some _ when List.exists (function Init _ -> true | _ -> false) cxs ->
-        reset ()
-     | Some (cxs', (Init y' | Patch (y', _) as cy'))
-            when List.for_all (function Patch _ -> true | _ -> false) cxs ->
-        let aux cx' = function
-         | Patch (x, dx) as cx -> (x, (if cx == cx' then None else Some dx))
-         | _ -> assert false
-        in
-        (match patch (List.map2 aux cxs' cxs) y' with
-         | Keep _ -> cy'
-         | cy -> (state := Some (cxs, cy); cy))
-     | _ -> assert false)
+     | None -> do_init ()
+     | Some (cxs', cy') ->
+        let cxsd = List.map2 dedupe cxs' cxs in
+        if List.exists (function Init _ -> true | _ -> false) cxsd then
+          do_init ()
+        else
+          do_patch (List.map patch_arg cxsd) cy')
   in
   lN_signal ~eq:(==) f sxs
 

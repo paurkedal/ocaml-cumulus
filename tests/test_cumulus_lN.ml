@@ -63,8 +63,10 @@ let test_lN r =
     C.integrate (Label_map.fold Label_map.add_int) dx Label_map.empty
   in
   let setters = List.map snd input in
+  let expect_init = ref true in
   let y =
     let init xs =
+      assert !expect_init;
       List.foldi (fun i ->
         Label_map.fold (fun k v ->
           Label_map.update k
@@ -146,6 +148,7 @@ let test_lN r =
     (* Printf.printf "%s\n%!" (Label_map.show Int.to_string z'); *)
     loop (n_mod - 1) z'
   in
+  expect_init := false;
   loop 50 Label_map.empty
 
 let () =
