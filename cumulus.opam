@@ -11,9 +11,8 @@ bug-reports: "https://github.com/paurkedal/ocaml-cumulus/issues"
 dev-repo: "git+https://github.com/paurkedal/ocaml-cumulus.git"
 
 depends: [
-  "dune" {build}
-  "ocaml"
-  "ocamlfind" {build}
+  "dune" {>= "2.5"}
+  "ocaml" {>= "4.08.1"}
 ]
 
 build: [
