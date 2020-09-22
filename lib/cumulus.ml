@@ -40,6 +40,8 @@ let of_signal sx =
     (fun x -> if !is_init then (is_init := false; Init x) else Patch (x, ()))
     sx
 
+let hold x0 ex = S.hold ~eq:(==) (Init x0) (E.map (fun x -> Patch (x, ())) ex)
+
 let value s = value_of_change (S.value s)
 
 let signal s = S.map ~eq:(==) value_of_change s

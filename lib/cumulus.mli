@@ -32,6 +32,8 @@ val of_event : 'a event -> (unit, 'a) t
 
 val of_signal : 'a signal -> ('a, unit) t
 
+val hold : 'a -> 'a event -> ('a, unit) t
+
 val integrate : ('da -> 'a -> 'a) -> 'da event -> 'a -> ('a, 'da) t
 
 val fold : ('b -> ('a, 'da) update) -> 'b event -> 'a -> ('a, 'da) t
