@@ -30,7 +30,7 @@ type ('a, 'da) t = ('a, 'da) change signal
 
 let const x = S.const (Init x)
 
-let create x = S.create (Init x)
+let create x = S.create ~eq:(==) (Init x)
 
 let of_event ex = S.hold ~eq:(==) (Init ()) (E.map (fun dx -> (Patch ((), dx))) ex)
 
@@ -66,7 +66,7 @@ let skip_keep s =
 
 let fold f e i =
   let f' acc dx = f dx (value_of_change acc) in
-  skip_keep (S.fold f' (Init i) e)
+  skip_keep (S.fold ~eq:(==) f' (Init i) e)
 
 let deduplicator () =
   let seen = ref None in
@@ -326,7 +326,7 @@ let bind s f =
   let on_switch c =
     incr epoch_in;
     let i = !epoch_in in
-    S.map (fun c' -> (i, c')) (f c)
+    S.map ~eq:(==) (fun c' -> (i, c')) (f c)
   in
   let epoch_out = ref 0 in
   let on_output (i, c) =
@@ -338,4 +338,4 @@ let bind s f =
        | Keep _ -> assert false)
     end
   in
-  S.map on_output (S.bind s on_switch)
+  S.map ~eq:(==) on_output (S.bind ~eq:(==) s on_switch)
