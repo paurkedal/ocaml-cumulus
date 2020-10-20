@@ -12,6 +12,7 @@ dev-repo: "git+https://github.com/paurkedal/ocaml-cumulus.git"
 
 depends: [
   "dune" {>= "2.5"}
+  "react"
   "ocaml" {>= "4.08.1"}
 ]
 
