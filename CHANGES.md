@@ -1,1 +1,3 @@
-Nothing released yet.
+## v0.0.1 - 2020-10-22
+
+- Initial release.
