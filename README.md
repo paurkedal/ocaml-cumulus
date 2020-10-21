@@ -10,6 +10,10 @@ along with the new value, allowing consumers to integrate it into an
 existing value rather than rebuilding its value from scratch. Cumulus is
 based on the [React](http://erratique.ch/software/react) FRP library.
 
+## Documentation
+
+- [API Reference](https://paurkedal.github.io/ocaml-cumulus/cumulus/Cumulus/index.html)
+
 ## Overview
 
 The main type `('a, 'b) Cumulus.t` represents a cumulus signal over a state
