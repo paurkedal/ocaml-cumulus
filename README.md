@@ -6,9 +6,9 @@ This library is in a working state, but the interface is not stable yet.
 
 Cumulus defines a signal-like type, which facilitates differential updates
 of the underlying value. When a cumulus signal is changed, it emits a patch
-along with the new value, allowing consumers to integrate it into an
-existing value rather than rebuilding its value from scratch. Cumulus is
-based on the [React](http://erratique.ch/software/react) FRP library.
+along with the new value, allowing consumers to integrate it into their
+existing state rather than reconstructing from the new value alone. Cumulus
+is based on the [React](http://erratique.ch/software/react) FRP library.
 
 ## Documentation
 
