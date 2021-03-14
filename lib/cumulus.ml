@@ -1,4 +1,4 @@
-(* Copyright (C) 2020  Petter A. Urkedal <paurkedal@gmail.com>
+(* Copyright (C) 2020--2021  Petter A. Urkedal <paurkedal@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -341,3 +341,9 @@ let bind s f =
     end
   in
   S.map ~eq:(==) on_output (S.bind ~eq:(==) s on_switch)
+
+module Unstable = struct
+  type ('a, 'da) rep = ('a, 'da) change
+  let to_rep s = s
+  let of_rep s = s
+end

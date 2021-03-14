@@ -1,4 +1,4 @@
-(* Copyright (C) 2020  Petter A. Urkedal <paurkedal@gmail.com>
+(* Copyright (C) 2020--2021  Petter A. Urkedal <paurkedal@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
@@ -181,3 +181,13 @@ val lN :
 (** {1 Higher Order} *)
 
 val bind : ('a, 'da) t -> (('a, 'da) change -> ('b, 'db) t) -> ('b, 'db) t
+
+(**/**)
+
+module Unstable : sig
+  (* This exposes the fact that a cumulus signal is currently implemented
+     directly as a React signal. This may change in future versions. *)
+  type ('a, 'da) rep
+  val to_rep : ('a, 'da) t -> ('a, 'da) rep React.S.t
+  val of_rep : ('a, 'da) rep React.S.t -> ('a, 'da) t
+end
