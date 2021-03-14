@@ -32,6 +32,8 @@ let const x = S.const (Init x)
 
 let create x = S.create ~eq:(==) (Init x)
 
+let retain s f = S.retain s f
+
 let of_event ex = S.hold ~eq:(==) (Init ()) (E.map (fun dx -> (Patch ((), dx))) ex)
 
 let of_signal sx =

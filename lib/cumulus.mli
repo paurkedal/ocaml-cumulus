@@ -53,6 +53,10 @@ val create : 'a -> ('a, 'da) t * (?step: Step.t -> ('a, 'da) change -> unit)
 (** [create v] is a [(v, f)] where [v] is a new cumulus signal starting with the
     value [v] and which can be updated by calling [f]. *)
 
+val retain : ('a, 'da) t -> (unit -> unit) -> [`R of (unit -> unit)]
+(** [retain c f] keeps a reference to the closure [f] in [c] and returns the
+    previously retained value. Does not invoke [f] at any point. *)
+
 val of_event : 'a event -> (unit, 'a) t
 (** [of_event e] is the cumulus signal having no state and reporting events from
     [e] as its changes. *)
